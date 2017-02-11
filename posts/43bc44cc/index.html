@@ -1,0 +1,1055 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css">
+
+
+  <meta name="keywords" content="JDBC,连接池,">
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="http://ol5tzdgva.bkt.clouddn.com/WebIcon.jpg?v=5.1.0">
+
+
+
+
+
+
+<meta name="description" content="#JDBC之连接池有这样的一种现象：
+
+用java代码操作数据库，需要数据库连接对象，一个用户至少要用到一个连接。现在假设有成千上百万个用户，就要创建十分巨大数量的连接对象，这会使数据库承受极大的压力，为了解决这种现象，一种技术出现了，这就是数据库连接池。
+
+什么是数据库连接池（原理）所谓数据库连接池，可以看作 ：在用户和数据库之间创建一个”池”，这个池中有若干个连接对象，当用户想要连接数据库，就">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JDBC连接池">
+<meta property="og:url" content="https://levin0723.github.io/posts/43bc44cc/index.html">
+<meta property="og:site_name" content="Levin0723">
+<meta property="og:description" content="#JDBC之连接池有这样的一种现象：
+
+用java代码操作数据库，需要数据库连接对象，一个用户至少要用到一个连接。现在假设有成千上百万个用户，就要创建十分巨大数量的连接对象，这会使数据库承受极大的压力，为了解决这种现象，一种技术出现了，这就是数据库连接池。
+
+什么是数据库连接池（原理）所谓数据库连接池，可以看作 ：在用户和数据库之间创建一个”池”，这个池中有若干个连接对象，当用户想要连接数据库，就">
+<meta property="og:updated_time" content="2017-02-11T13:01:55.747Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="JDBC连接池">
+<meta name="twitter:description" content="#JDBC之连接池有这样的一种现象：
+
+用java代码操作数据库，需要数据库连接对象，一个用户至少要用到一个连接。现在假设有成千上百万个用户，就要创建十分巨大数量的连接对象，这会使数据库承受极大的压力，为了解决这种现象，一种技术出现了，这就是数据库连接池。
+
+什么是数据库连接池（原理）所谓数据库连接池，可以看作 ：在用户和数据库之间创建一个”池”，这个池中有若干个连接对象，当用户想要连接数据库，就">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://levin0723.github.io/posts/43bc44cc/">
+
+
+
+
+
+  <title> JDBC连接池 | Levin0723 </title>
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Levin0723</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+    
+      <p class="site-subtitle">学无止境，勤为径！</p>
+    
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br>
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope="" itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="https://levin0723.github.io/posts/43bc44cc/">
+
+  <span style="display:none" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="Levin0723">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="http://ol5tzdgva.bkt.clouddn.com/WebIcon.jpg">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Levin0723">
+    <span style="display:none" itemprop="logo" itemscope="" itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Levin0723" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                JDBC连接池
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-02-11T20:35:15+08:00">
+                2017-02-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/JDBC/" itemprop="url" rel="index">
+                    <span itemprop="name">JDBC</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/43bc44cc/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="posts/43bc44cc/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>#<center>JDBC之连接池<center><br><strong>有这样的一种现象：</strong></center></center></p>
+<blockquote>
+<p>用java代码操作数据库，需要数据库连接对象，一个用户至少要用到一个连接。现在假设有成千上百万个用户，就要创建十分巨大数量的连接对象，这会使数据库承受极大的压力，为了解决这种现象，一种技术出现了，这就是数据库连接池。</p>
+</blockquote>
+<h3 id="什么是数据库连接池（原理）"><a href="#什么是数据库连接池（原理）" class="headerlink" title="什么是数据库连接池（原理）"></a>什么是数据库连接池（原理）</h3><p>所谓数据库连接池，可以看作 ：在用户和数据库之间创建一个”池”，这个池中有若干个连接对象，当用户想要连接数据库，就要先从连接池中获取连接对象，然后操作数据库。一旦连接池中的连接对象被拿光了，下一个想要操作数据库的用户必须等待，等待其他用户释放连接对象，把它放回连接池中，这时候等待的用户才能获取连接对象，从而操作数据库。</p>
+<h3 id="数据库连接池的属性"><a href="#数据库连接池的属性" class="headerlink" title="数据库连接池的属性"></a>数据库连接池的属性</h3><p>连接对象初始的数量：initSize，一开始就创建若干个，当不够时再添加</p>
+<p>连接对象最大数量：maxSize，添加到最大值则不会再添加<br><strong>下面我们用代码下一个自己的连接池吧~</strong></p>
+<h3 id="实现自己的连接池"><a href="#实现自己的连接池" class="headerlink" title="实现自己的连接池"></a>实现自己的连接池</h3><blockquote>
+<p>看下面代码和注释吧~<br><a id="more"></a><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyPool</span> </span>&#123;</div><div class="line">    <span class="comment">//设置注册属性    </span></div><div class="line">    <span class="keyword">private</span> String url = <span class="string">"jdbc:mysql://localhost:3306/vmaxtam"</span>;</div><div class="line">    <span class="keyword">private</span> String user = <span class="string">"root"</span>;</div><div class="line">    <span class="keyword">private</span> String password = <span class="string">"root"</span>;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> String driverClass=<span class="string">"com.mysql.jdbc.Driver"</span>;</div><div class="line"></div><div class="line">    <span class="comment">//设置连接池属性</span></div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> initSize = <span class="number">5</span>;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> maxSize = <span class="number">8</span>;</div><div class="line">    </div><div class="line">    <span class="comment">//用LinkedList对象来保存connection对象</span></div><div class="line">    <span class="keyword">private</span> LinkedList&lt;Connection&gt; connList = <span class="keyword">new</span> LinkedList&lt;Connection&gt;();</div><div class="line">    <span class="comment">//声明一个临时变量来计算连接对象的数量</span></div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> currentsize = <span class="number">0</span>;</div><div class="line">    </div><div class="line">    <span class="comment">//声明MyPool对象时自动注册驱动</span></div><div class="line">    <span class="keyword">static</span>&#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            Class.forName(driverClass);</div><div class="line">        &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</div><div class="line">            <span class="comment">// TODO Auto-generated catch block</span></div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">//获取连接的方法</span></div><div class="line">    <span class="function"><span class="keyword">private</span> Connection <span class="title">getConnection</span><span class="params">()</span></span></div><div class="line">    &#123;</div><div class="line">        Connection conn=<span class="keyword">null</span>;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            conn = DriverManager.getConnection(url, user, password);</div><div class="line">        &#125; <span class="keyword">catch</span> (SQLException e) &#123;</div><div class="line">            <span class="comment">// TODO Auto-generated catch block</span></div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> conn;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">//构造方法，初始化连接池，并往里面添加连接对象</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MyPool</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; initSize; i++)</div><div class="line">        &#123;</div><div class="line">            Connection connection = <span class="keyword">this</span>.getConnection();</div><div class="line">            connList.add(connection);</div><div class="line">            currentsize++;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">//获取连接池中的一个连接对象</span></div><div class="line">    <span class="function"><span class="keyword">public</span> Connection <span class="title">getConnFromPool</span><span class="params">()</span></span></div><div class="line">    &#123;</div><div class="line">        <span class="comment">//当连接池还没空</span></div><div class="line">        <span class="keyword">if</span>(connList.size()&gt;<span class="number">0</span>)&#123;</div><div class="line">            Connection connection = connList.getFirst();</div><div class="line">            connList.removeFirst();</div><div class="line">            <span class="keyword">return</span> connection;</div><div class="line">        </div><div class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(connList.size()==<span class="number">0</span>&amp;&amp;currentsize&lt;<span class="number">8</span>)&#123;</div><div class="line">            <span class="comment">//连接池被拿空，且连接数没有达到上限，创建新的连接</span></div><div class="line">            currentsize++;</div><div class="line">            connList.addLast(<span class="keyword">this</span>.getConnection());</div><div class="line">            </div><div class="line">            Connection connection = connList.getFirst();</div><div class="line">            connList.removeFirst();</div><div class="line">            <span class="keyword">return</span> connection;        </div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"连接数达到上限，请等待"</span>);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">//把用完的连接放回连接池</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">releaseConnection</span><span class="params">(Connection connection)</span></span></div><div class="line">    &#123;</div><div class="line">        connList.addLast(connection);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+</blockquote>
+<p><strong>有了连接池后，我们写一个测试来调用一下它吧~</strong><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Test</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test1</span><span class="params">()</span></span></div><div class="line">    &#123;        </div><div class="line">        <span class="comment">//获得连接池</span></div><div class="line">        MyPool mypool = <span class="keyword">new</span> MyPool();</div><div class="line">        </div><div class="line">        <span class="comment">/*从连接池中尝试获取9个连接</span></div><div class="line">        for(int i = 0 ; i&lt;9; i++)&#123;</div><div class="line">            Connection conn = mypool.getConnFromPool();</div><div class="line">            System.out.println(conn.toString());</div><div class="line">        &#125;*/</div><div class="line">        </div><div class="line">        <span class="comment">//获取第五个连接后，释放一下，然后再获取</span></div><div class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span> ; i&lt;<span class="number">9</span>; i++)&#123;</div><div class="line">            Connection conn = mypool.getConnFromPool();</div><div class="line">            <span class="keyword">if</span>(i==<span class="number">5</span>)&#123;</div><div class="line">                mypool.releaseConnection(conn);</div><div class="line">            &#125;</div><div class="line">            System.out.println(conn.toString());</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
+<p>上面这样就实现了自己的一个连接池，但是这个连接池依然存在着很多问题，一个较为明显的问题就是： </p>
+<p>如果一个用户获取了一个连接对象，然后调用了close()方法把它关闭了，没有放回池中，这样池中的这个对象就回不来了，造成最大连接上限为8个的连接池实际上只有7个连接在工作。</p>
+<p>为了解决这个问题，我们需要对close()方法进行改造，是用户调用close()方法时，实际上是把连接放回连接池中，而不是关闭它。</p>
+<blockquote>
+<p>下面就为解决这个问题来分析下~</p>
+</blockquote>
+<h3 id="解决用户调用close-方法关闭连接"><a href="#解决用户调用close-方法关闭连接" class="headerlink" title="解决用户调用close()方法关闭连接"></a>解决用户调用close()方法关闭连接</h3><ol>
+<li>使用静态代理，写一个myConnection()类来继承connection的实现类，然后重写它的close()方法.</li>
+<li>使用动态代理，使用jdbc动态代理类：java.lang.reflect.Proxy类<br>参数解析：</li>
+</ol>
+<p>ClassLoader:类加载器，只要在同一个JDK中的类即可</p>
+<p>  Class&lt;?&gt;[]:要代理的接口的集合</p>
+<pre><code>InvocationHandler：代理接口的方法处理器
+</code></pre><p>根据需要，我们要给MyPool中的Connection加一个动态代理，所以我们用的前两个参数是：MyPool.Class.GetClassLoader 与 new Class&lt;&gt;{Connection}<br>最后还剩方法处理器，我们要修改Connection中的close方法，所以我们写出一个这样做的处理器即可，具体实现看下面代码与注释~<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//获取连接的方法</span></div><div class="line">    <span class="function"><span class="keyword">private</span> Connection <span class="title">getConnection</span><span class="params">()</span></span></div><div class="line">    &#123;</div><div class="line">        </div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="comment">//获取一个连接</span></div><div class="line">            <span class="keyword">final</span> Connection conn=DriverManager.getConnection(url, user, password);</div><div class="line">            </div><div class="line">            <span class="comment">//把连接交给动态代理类转换为代理的连接对象</span></div><div class="line">            Connection myconn = (Connection)Proxy.newProxyInstance(</div><div class="line">                    MyPool.class.getClassLoader(), </div><div class="line">                    <span class="keyword">new</span> Class[] &#123;Connection.class&#125;, </div><div class="line">                             <span class="comment">//编写一个方法处理器</span></div><div class="line">                    <span class="keyword">new</span> InvocationHandler() &#123;</div><div class="line">                </div><div class="line">                <span class="meta">@Override</span></div><div class="line">                <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span></span></div><div class="line">                        <span class="keyword">throws</span> Throwable &#123;</div><div class="line">                    Object value = <span class="keyword">null</span>;</div><div class="line">                    </div><div class="line">                    <span class="comment">//当遇到close方法，就会把对象放回连接池中，而不是关闭连接</span></div><div class="line">                    <span class="keyword">if</span>(method.getName().equals(<span class="string">"close"</span>))</div><div class="line">                    &#123;</div><div class="line">                        MyPool.connList.addLast(conn);</div><div class="line">                    &#125;<span class="keyword">else</span></div><div class="line">                    &#123;</div><div class="line">                        <span class="comment">//其它方法不变</span></div><div class="line">                        value = method.invoke(conn, args);</div><div class="line">                    &#125;</div><div class="line">                    <span class="keyword">return</span> value;</div><div class="line">                &#125;&#125;</div><div class="line">            );    </div><div class="line">            <span class="keyword">return</span> myconn;</div><div class="line">        &#125; <span class="keyword">catch</span> (SQLException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(e);</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
+<p>以上就是利用动态代理的方式解决close的问题了~~但是，我们自己写的连接池还有很多其他问题：</p>
+<ol>
+<li>当前多个并发用户同时获取连接时，可能拿到同一个连接对象</li>
+<li>当前用户连接数超过了最大连接数时，不能直接抛出异常，应该有机制，控制用户等待时间……..</li>
+</ol>
+<p>所以，这时候已经有人站出来，为我们写好了一些功能相对完善的连接池，这些第三方的连接池得到了广泛的用途，下面我们来介绍一下常见的连接池工具吧~</p>
+<h3 id="DBCP连接池"><a href="#DBCP连接池" class="headerlink" title="DBCP连接池"></a>DBCP连接池</h3><p>简介：DBCP连接池是开源组织Apache软件基金组织开发的连接池实现。</p>
+<p>事实上，tomcat服务器默认就会使用这个连接池道具。</p>
+<p>如何使用DBCP连接池呢，下面我来一一演示。</p>
+<h3 id="DBCP的使用步骤"><a href="#DBCP的使用步骤" class="headerlink" title="DBCP的使用步骤"></a>DBCP的使用步骤</h3><ol>
+<li>导包，使用第三方的道具，必须导入相应的jar包。需要导入两个jar包：</li>
+</ol>
+<pre><code>commons-dbcp-1.4.jar包
+commons-pool-1.5.6.jar包
+</code></pre><ol>
+<li>使用代码~看看下面代码的演示吧 </li>
+<li><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DBCPTest</span> </span>&#123;</div><div class="line">        <span class="keyword">private</span> String url = <span class="string">"jdbc:mysql://localhost:3306/vmaxtam"</span>;</div><div class="line">        <span class="keyword">private</span> String user = <span class="string">"root"</span>;</div><div class="line">        <span class="keyword">private</span> String password = <span class="string">"root"</span>;</div><div class="line">        <span class="keyword">private</span> String classDriver = <span class="string">"com.mysql.jdbc.Driver"</span>;</div><div class="line">    </div><div class="line">        <span class="meta">@Test</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Test1</span><span class="params">()</span></span></div><div class="line">        &#123;</div><div class="line">            <span class="comment">//创建DBCP连接池对象</span></div><div class="line">            BasicDataSource ds = <span class="keyword">new</span> BasicDataSource();</div><div class="line">            </div><div class="line">            <span class="comment">//设置连接参数来进行连接</span></div><div class="line">            ds.setUrl(url);</div><div class="line">            ds.setUsername(user);</div><div class="line">            ds.setPassword(password);</div><div class="line">            ds.setDriverClassName(classDriver);</div><div class="line">            </div><div class="line">            <span class="comment">//然后可以设置连接池的一些属性啦~</span></div><div class="line">            ds.setInitialSize(<span class="number">5</span>);</div><div class="line">            ds.setMaxActive(<span class="number">8</span>);</div><div class="line">            ds.setMaxWait(<span class="number">3000</span>);<span class="comment">//设置最大的等待时长,毫秒为单位</span></div><div class="line">            </div><div class="line">            <span class="comment">//从连接池中获取对象</span></div><div class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span> ; i&lt;<span class="number">8</span>;i++)</div><div class="line">            &#123;</div><div class="line">                Connection conn = <span class="keyword">null</span>;</div><div class="line">                <span class="keyword">try</span> &#123;</div><div class="line">                    conn = ds.getConnection();</div><div class="line">                    System.out.println(conn.hashCode());</div><div class="line">                    </div><div class="line">                &#125; <span class="keyword">catch</span> (SQLException e) &#123;</div><div class="line">                    e.printStackTrace();</div><div class="line">                &#125;        </div><div class="line">            &#125;</div><div class="line">            </div><div class="line">        &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>为了测试效果，我们可以在循环中设置拿9个连接额，这样在拿第九个连接时就会出现等待，等待到结束都没有连接被释放回连接池，就会出现报错。</p>
+<p>也可以把For循环改成下面那样，测试close方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//从连接池中获取对象</span></div><div class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span> ; i&lt;<span class="number">9</span>;i++)</div><div class="line">            &#123;</div><div class="line">                Connection conn = <span class="keyword">null</span>;</div><div class="line">                <span class="keyword">try</span> &#123;</div><div class="line">                    conn = ds.getConnection();</div><div class="line">                    System.out.println(conn.hashCode());</div><div class="line">                    <span class="keyword">if</span>(i==<span class="number">5</span>)</div><div class="line">                    &#123;</div><div class="line">                        conn.close();</div><div class="line">                    &#125;</div><div class="line">                    </div><div class="line">                &#125; <span class="keyword">catch</span> (SQLException e) &#123;</div><div class="line">                    e.printStackTrace();</div><div class="line">                &#125;        </div><div class="line">            &#125;</div></pre></td></tr></table></figure></p>
+<p>上面的代码还是有点地方可以得到优化，例如可以通过配置文件来配置连接的参数，还有数据库连接池的属性参数。</p>
+<p>配置文件：</p>
+<pre><code>url=jdbc:mysql://localhost:3306/vmaxtam
+username=root
+password=root
+classDriver=com.mysql.jdbc.Driver        
+initialSize=5
+maxActive=8
+maxWait=3000
+</code></pre><p>用对象读取配置文件：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Test</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Test2</span><span class="params">()</span></span></div><div class="line">        &#123;</div><div class="line">            </div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                <span class="comment">//创建配置对象</span></div><div class="line">                Properties properties = <span class="keyword">new</span> Properties();</div><div class="line">                properties.load(DBCPTest.class.getResourceAsStream(<span class="string">"/dbcp.properties"</span>));</div><div class="line">            </div><div class="line">                <span class="comment">//创建连接池对象，并且用连接池工厂来加载配置对象的信息</span></div><div class="line">                BasicDataSource ds = (BasicDataSource)BasicDataSourceFactory.createDataSource(properties);</div><div class="line">    </div><div class="line">            <span class="comment">//从连接池中获取对象</span></div><div class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span> ; i&lt;<span class="number">8</span>;i++)</div><div class="line">            &#123;</div><div class="line">                Connection conn = <span class="keyword">null</span>;</div><div class="line">                conn = ds.getConnection();</div><div class="line">                System.out.println(conn.hashCode());</div><div class="line">            &#125;</div><div class="line">        &#125;<span class="keyword">catch</span> (Exception e2) &#123;</div><div class="line">                e2.printStackTrace();</div><div class="line">            &#125;            </div><div class="line">        &#125;</div></pre></td></tr></table></figure>
+<p>以上就是DBCP连接池的基本用法了~下面我们来学习另一个连接池~</p>
+<h3 id="C3P0连接池"><a href="#C3P0连接池" class="headerlink" title="C3P0连接池"></a>C3P0连接池</h3><blockquote>
+<p>简介： C3P0是一个开源组织的产品，开源框架的内部的连接池一般都使用C3P0来实现，例如：Hibernate</p>
+</blockquote>
+<h3 id="C3P0的使用步骤"><a href="#C3P0的使用步骤" class="headerlink" title="C3P0的使用步骤"></a>C3P0的使用步骤</h3><ol>
+<li><p>导包，使用第三方的工具必须导入jar包,要导入的包：</p>
+<p> c3p0-0.9.1.2.jar 包</p>
+</li>
+<li><p>看下面的代码显示怎么使用这个连接池吧~</p>
+</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Test</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Test1</span><span class="params">()</span></span></div><div class="line">    &#123;</div><div class="line"></div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="comment">//获取连接池对象</span></div><div class="line">            ComboPooledDataSource cp = <span class="keyword">new</span> ComboPooledDataSource();</div><div class="line">            </div><div class="line">            <span class="comment">//设置连接参数</span></div><div class="line">            cp.setJdbcUrl(url);</div><div class="line">            cp.setUser(user);</div><div class="line">            cp.setPassword(password);</div><div class="line">            cp.setDriverClass(classDriver);</div><div class="line">            </div><div class="line">            <span class="comment">//设置连接池的参数</span></div><div class="line">            cp.setInitialPoolSize(<span class="number">5</span>);<span class="comment">//初始数量</span></div><div class="line">            cp.setMaxPoolSize(<span class="number">8</span>);<span class="comment">//最大数量</span></div><div class="line">            cp.setCheckoutTimeout(<span class="number">3000</span>);<span class="comment">//最大等待时间</span></div><div class="line">            </div><div class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span> ; i&lt;<span class="number">8</span> ; i++)</div><div class="line">            &#123;</div><div class="line">                Connection conn = cp.getConnection();</div><div class="line">                System.out.println(conn.hashCode());</div><div class="line">            &#125;</div><div class="line">        </div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;    </div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>可以看出，C3P0的用法和DBCP的用法非常的相似~这里不做累赘。</p>
+<p>特别的是C3PO读取参数文件的方式，C3P0除了能像DBCP那样读取配置文件，它还提供了一种特殊的设置参数的方式，就是把参数数据写在一个名叫c3p0-config.xml的XML文件中，在创建C3P0对象时会自动在classpath去寻找该文件来读取~</p>
+<p>也就是说:c3p0会到classpath下读取名字为c3p0-config.xml文件</p>
+<p>这份XML文件有特殊的要求，下面我们来写一下这份XML文件:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">c3p0-config</span>&gt;</span></div><div class="line">    <span class="comment">&lt;!-- 默认配置 --&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">default-config</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"jdbcUrl"</span>&gt;</span>jdbc:mysql://localhost:3306/vmaxtam<span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"user"</span>&gt;</span>root<span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"password"</span>&gt;</span>root<span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"driverClass"</span>&gt;</span>com.mysql.jdbc.Driver<span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"initialPoolSize"</span>&gt;</span>5<span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"maxPoolSize"</span>&gt;</span>8<span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"checkoutTimeout"</span>&gt;</span>3000<span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">     </div><div class="line">    <span class="tag">&lt;/<span class="name">default-config</span>&gt;</span></div><div class="line"></div><div class="line">    <span class="comment">&lt;!-- mysql的连接配置 --&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">named-config</span> <span class="attr">name</span>=<span class="string">"mysql"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"jdbcUrl"</span>&gt;</span>jdbc:mysql://localhost:3306/vmaxtam<span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"user"</span>&gt;</span>root<span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"password"</span>&gt;</span>root<span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"driverClass"</span>&gt;</span>com.mysql.jdbc.Driver<span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">        </div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"initialPoolSize"</span>&gt;</span>5<span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"maxPoolSize"</span>&gt;</span>8<span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"checkoutTimeout"</span>&gt;</span>3000<span class="tag">&lt;/<span class="name">property</span>&gt;</span>    </div><div class="line">    <span class="tag">&lt;/<span class="name">named-config</span>&gt;</span></div><div class="line">    </div><div class="line">    <span class="comment">&lt;!-- 使用 oracal就会用这份配置--&gt;</span></div><div class="line">    <span class="comment">&lt;!-- 也可以写其他数据库的配置 --&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;/<span class="name">c3p0-config</span>&gt;</span></div></pre></td></tr></table></figure>
+<p><strong>写完xml文件，现在我们就读取它吧~</strong><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Test</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Test2</span><span class="params">()</span></span></div><div class="line">    &#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="comment">//获取连接池对象,写上参数就会去找xml文件找这个数据库的配置来读取，当无参时，就会使用默认设置。</span></div><div class="line">            ComboPooledDataSource cp = <span class="keyword">new</span> ComboPooledDataSource(<span class="string">"mysql"</span>);</div><div class="line">            </div><div class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span> ; i&lt;<span class="number">9</span> ; i++)</div><div class="line">            &#123;</div><div class="line">                Connection conn = cp.getConnection();</div><div class="line">                System.out.println(conn.hashCode());</div><div class="line">                <span class="keyword">if</span>(i==<span class="number">5</span>)</div><div class="line">                &#123;</div><div class="line">                    conn.close();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        </div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;    </div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
+<blockquote>
+<p>使用这种读取方法，显得代码十分简便</p>
+</blockquote>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+  <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+    <div>如果觉得不错，您的支持将鼓励我继续创作！</div>
+    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+      <span>赏</span>
+    </button>
+    <div id="QR" style="display: none;">
+      
+        <div id="wechat" style="display: inline-block">
+          <img id="wechat_qr" src="http://ol5tzdgva.bkt.clouddn.com/wechatPay-small.png" alt="Levin0723 WeChat Pay">
+          <p>微信打赏</p>
+        </div>
+      
+      
+        <div id="alipay" style="display: inline-block">
+          <img id="alipay_qr" src="http://ol5tzdgva.bkt.clouddn.com/aliPay-small.jpg" alt="Levin0723 Alipay">
+          <p>支付宝打赏</p>
+        </div>
+      
+    </div>
+  </div>
+
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/JDBC/" rel="tag"># JDBC</a>
+          
+            <a href="/tags/连接池/" rel="tag"># 连接池</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/89caf779/" rel="next" title="npm安装hexo卡住怎么办">
+                <i class="fa fa-chevron-left"></i> npm安装hexo卡住怎么办
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <div class="ds-share flat" data-thread-key="posts/43bc44cc/" data-title="JDBC连接池" data-content="" data-url="https://levin0723.github.io/posts/43bc44cc/">
+  <div class="ds-share-inline">
+    <ul class="ds-share-icons-16">
+
+      <li data-toggle="ds-share-icons-more"><a class="ds-more" href="javascript:void(0);">分享到：</a></li>
+      <li><a class="ds-weibo" href="javascript:void(0);" data-service="weibo">微博</a></li>
+      <li><a class="ds-qzone" href="javascript:void(0);" data-service="qzone">QQ空间</a></li>
+      <li><a class="ds-qqt" href="javascript:void(0);" data-service="qqt">腾讯微博</a></li>
+      <li><a class="ds-wechat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+
+    </ul>
+    <div class="ds-share-icons-more">
+    </div>
+  </div>
+</div>
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="posts/43bc44cc/" data-title="JDBC连接池" data-url="https://levin0723.github.io/posts/43bc44cc/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image" src="http://ol5tzdgva.bkt.clouddn.com/WebIcon.jpg" alt="Levin0723">
+          <p class="site-author-name" itemprop="name">Levin0723</p>
+          <p class="site-description motion-element" itemprop="description">Levin0723的个人博客</p>
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              
+                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-name">标签</span>
+              
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/levin0723" target="_blank" title="GitHub" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/levin9723" target="_blank" title="Weibo" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.zhihu.com/people/levin0723" target="_blank" title="知乎" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  知乎
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.imooc.com/u/3954956" target="_blank" title="慕课网" rel="external nofollow noopener noreferrer">
+                  
+                    <i class="fa fa-fw fa-book"></i>
+                  
+                  慕课网
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是数据库连接池（原理）"><span class="nav-number">1.</span> <span class="nav-text">什么是数据库连接池（原理）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据库连接池的属性"><span class="nav-number">2.</span> <span class="nav-text">数据库连接池的属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现自己的连接池"><span class="nav-number">3.</span> <span class="nav-text">实现自己的连接池</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决用户调用close-方法关闭连接"><span class="nav-number">4.</span> <span class="nav-text">解决用户调用close()方法关闭连接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DBCP连接池"><span class="nav-number">5.</span> <span class="nav-text">DBCP连接池</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DBCP的使用步骤"><span class="nav-number">6.</span> <span class="nav-text">DBCP的使用步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C3P0连接池"><span class="nav-number">7.</span> <span class="nav-text">C3P0连接池</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C3P0的使用步骤"><span class="nav-number">8.</span> <span class="nav-text">C3P0的使用步骤</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Levin0723</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io" rel="external nofollow noopener noreferrer" target="_blank">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next" rel="external nofollow noopener noreferrer" target="_blank">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+<div class="busuanzi-count">
+
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv"><i class="fa fa-user"></i><span class="busuanzi-value" id="busuanzi_value_site_uv"></span>人</span>
+  
+
+  
+    <span class="site-pv"><i class="fa fa-eye"></i><span class="busuanzi-value" id="busuanzi_value_site_pv"></span>次</span>
+  
+  
+</div>
+
+
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"levin0723"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
