@@ -4,6 +4,28 @@
 
     
   <url>
+    <loc>https://levin0723.github.io/posts/43bc44cc/</loc>
+    <lastmod>2017-02-11T13:10:21.197Z</lastmod>
+    <data>
+        <display>
+        <title>JDBC连接池</title>
+        <pubTime>2017-02-11T12:35:15.000Z</pubTime>
+        
+        <tag>JDBC</tag>
+         
+        <tag>连接池</tag>
+         
+         
+           
+             
+              <breadCrumb title="JDBC" url="https://levin0723.github.io/categories/JDBC/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>https://levin0723.github.io/posts/3522aeda/</loc>
     <lastmod>2017-02-11T13:07:38.819Z</lastmod>
     <data>
@@ -21,28 +43,6 @@
            
              
               <breadCrumb title="java" url="https://levin0723.github.io/categories/java/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://levin0723.github.io/posts/43bc44cc/</loc>
-    <lastmod>2017-02-11T13:06:59.925Z</lastmod>
-    <data>
-        <display>
-        <title>JDBC连接池</title>
-        <pubTime>2017-02-11T12:35:15.000Z</pubTime>
-        
-        <tag>JDBC</tag>
-         
-        <tag>连接池</tag>
-         
-         
-           
-             
-              <breadCrumb title="JDBC" url="https://levin0723.github.io/categories/JDBC/"/>
           
         </display>
     </data>
