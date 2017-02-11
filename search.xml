@@ -2,6 +2,13 @@
 <search>
   
     
+    <entry>
+      <title><![CDATA[Idea构建Maven项目教程]]></title>
+      <url>%2Fposts%2F3522aeda%2F</url>
+      <content type="text"><![CDATA[1. 步骤一：配置Idea的maven插件 2. 步骤二：创建maven项目file–&gt;new–&gt;project 3. 步骤三：设置groupid，artifactId 4. 步骤四：设置maven配置 5. 步骤五：设置项目名 6. 步骤六：最后，finish完成构建7. 构建中遇到的问题： jar包下载缓慢 解决方案，配置setting.xml为国内阿里云镜像，下载速度秒飞~~&lt;mirrors&gt;&lt;mirror&gt;&lt;id&gt;alimaven&lt;/id&gt;&lt;name&gt;aliyun maven&lt;/name&gt;&lt;url&gt;http://maven.aliyun.com/nexus/content/groups/ public/&lt;/url&gt;&lt;mirrorOf&gt;central&lt;/mirrorOf&gt;&lt;/mirror&gt;&lt;/mirrors&gt;]]></content>
+    </entry>
+
+    
   
   
 </search>
