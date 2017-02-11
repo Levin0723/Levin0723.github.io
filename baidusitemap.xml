@@ -3,10 +3,31 @@
 
 
     
+  <url>
+    <loc>https://levin0723.github.io/posts/89caf779/</loc>
+    <lastmod>2017-02-11T12:29:17.301Z</lastmod>
+    <data>
+        <display>
+        <title>npm安装hexo卡住怎么办</title>
+        <pubTime>2017-02-11T12:19:17.000Z</pubTime>
+        
+        <tag>npm</tag>
+         
+        <tag>hexo</tag>
+         
+         
+           
+             
+              <breadCrumb title="hexo" url="https://levin0723.github.io/categories/hexo/"/>
+          
+        </display>
+    </data>
+    </url>
+
     
   <url>
     <loc>https://levin0723.github.io/posts/3522aeda/</loc>
-    <lastmod>2017-02-11T10:46:10.461Z</lastmod>
+    <lastmod>2017-02-11T12:14:09.824Z</lastmod>
     <data>
         <display>
         <title>Idea构建Maven项目教程</title>
@@ -27,6 +48,7 @@
     </data>
     </url>
 
+    
     
     
     
