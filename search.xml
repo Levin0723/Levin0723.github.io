@@ -3,6 +3,13 @@
   
     
     <entry>
+      <title><![CDATA[最新传智播客黑马学习培训视频含简历]]></title>
+      <url>%2Fblogs%2F2017-02-21%2Fe66a6733.html</url>
+      <content type="text"><![CDATA[自己某宝上买的，需要的同学赶紧保存下载吧！ 链接: http://pan.baidu.com/s/1nva2hyL 密码: nrwc]]></content>
+    </entry>
+
+    
+    <entry>
       <title><![CDATA[SQL嵌套查询]]></title>
       <url>%2Fblogs%2F2017-02-18%2F30fce7cc.html</url>
       <content type="text"><![CDATA[使用一句SQL语句查出下图中学生平均分大于90的学生姓名 注意要考虑学生同名不同班问题，并且是每个学生不同科目的平均分，而不是所有的平均分 答案如下1234SELECT a.name FROM (SELECT AVG(s.`score`) AS avg_score,s.`name` FROM score AS s GROUP BY s.`name`,s.`class`) AS a WHERE a.avg_score&gt;90; 分析SELECT AVG(s.`score`) AS avg_score,s.`name` FROM score AS s GROUP BY s.`name`,s.`class` 这条嵌套语句是查询每个学生的平均分，结果如下图 然后再以该嵌套语句的结果作为一张表，取别名查平均分大于90的学生姓名，结果如下图]]></content>
